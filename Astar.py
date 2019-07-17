@@ -17,7 +17,8 @@ d = {1: (255, 175, 0),
      2: (0, 255, 0),
      3: (245, 66, 218),
      4: (125, 125, 125),
-     5: (0, 0, 255)}
+     5: (0, 0, 255),
+     6: (125,0,125)}
 
 
 class Node():
@@ -74,12 +75,13 @@ def astar(maze, start, end):
             while current is not None:
                 path.append(current.position)
                 current = current.parent
-            return open_list, path[::-1]  # Return reversed path
+            return open_list, closed_list, path[::-1]  # Return reversed path
 
+        #(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)
         # Generate neighbours
         neighbours = []
         # Adjacent squares
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]:
+        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
 
             # Get node position
             node_position = (
@@ -106,7 +108,7 @@ def astar(maze, start, end):
             not_in_closed_list = True
             for closed_neighbour in closed_list:
                 if neighbour.position == closed_neighbour.position:
-                    is_in_closed_list = False
+                    not_in_closed_list = False
 
             if(not_in_closed_list):
 	            # Create the f, g, and h values
@@ -147,10 +149,10 @@ def main():
             [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-    agent_pos = (2, 2)
-    food_pos = (2, 8)
+    agent_pos = (np.random.randint(1, 10), np.random.randint(1, 10))
+    food_pos = (np.random.randint(1, 10), np.random.randint(1, 10))
     print("start path")
-    closed, path = astar(maze, agent_pos, food_pos)
+    openset, closedset, path = astar(maze, agent_pos, food_pos)
     print("end path")
     ###### Environment #######
     env = np.zeros((SIZE, SIZE, 3), dtype=np.uint8)  # Make a black rbg image
@@ -163,10 +165,11 @@ def main():
 
 
     # Add the closed nodes to the environment
-    print(len(closed))
-    for node in closed:
-    	print(node.position)
+    for node in closedset:
     	env = place_on_env(env, node.position, d[CLOSED_N])
+
+    for node in openset:
+        env = place_on_env(env, node.position, d[OPEN_N])
 
     # Add the path to the environment
     for node in path:
